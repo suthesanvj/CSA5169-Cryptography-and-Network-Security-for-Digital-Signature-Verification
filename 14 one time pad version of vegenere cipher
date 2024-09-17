@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <string.h>
+
+#define ALPHABET_SIZE 26
+
+int charToNum(char c) {
+    return (c - 'a') % ALPHABET_SIZE;
+}
+
+char numToChar(int num) {
+    return (num + 'a') % ALPHABET_SIZE;
+}
+
+void encryptVigenere(char *plaintext, int *keyStream, int keyLength, char *ciphertext) {
+    int len = strlen(plaintext);
+    for (int i = 0; i < len; i++) {
+        int shift = keyStream[i % keyLength];
+        if (plaintext[i] >= 'a' && plaintext[i] <= 'z') {
+            ciphertext[i] = numToChar((charToNum(plaintext[i]) + shift) % ALPHABET_SIZE);
+        } else {
+            ciphertext[i] = plaintext[i];
+        }
+    }
+    ciphertext[len] = '\0';
+}
+
+void decryptVigenere(char *ciphertext, int *keyStream, int keyLength, char *plaintext) {
+    int len = strlen(ciphertext);
+    for (int i = 0; i < len; i++) {
+        int shift = keyStream[i % keyLength];
+        if (ciphertext[i] >= 'a' && ciphertext[i] <= 'z') {
+            plaintext[i] = numToChar((charToNum(ciphertext[i]) - shift + ALPHABET_SIZE) % ALPHABET_SIZE);
+        } else {
+            plaintext[i] = ciphertext[i];
+        }
+    }
+    plaintext[len] = '\0';
+}
+
+int main() {
+    char plaintext[] = "send more money";
+    int keyStream[] = {9, 0, 1, 7, 23, 15, 21, 14, 11, 11, 2, 8, 9};
+    int keyLength = sizeof(keyStream) / sizeof(keyStream[0]);
+    char ciphertext[100];
+    char decrypted[100];
+
+    encryptVigenere(plaintext, keyStream, keyLength, ciphertext);
+    printf("Encrypted message: %s\n", ciphertext);
+
+    decryptVigenere(ciphertext, keyStream, keyLength, decrypted);
+    printf("Decrypted message: %s\n", decrypted);
+
+    char targetPlaintext[] = "cash not needed";
+    int newKeyStream[100];
+    for (int i = 0; i < strlen(ciphertext); i++) {
+        if (ciphertext[i] >= 'a' && ciphertext[i] <= 'z' && targetPlaintext[i] >= 'a' && targetPlaintext[i] <= 'z') {
+            newKeyStream[i] = (charToNum(ciphertext[i]) - charToNum(targetPlaintext[i]) + ALPHABET_SIZE) % ALPHABET_SIZE;
+        }
+    }
+    printf("Key Stream for decryption: ");
+    for (int i = 0; i < strlen(targetPlaintext); i++) {
+        printf("%d ", newKeyStream[i]);
+    }
+    printf("\n");
+
+    printf("\n\n\nsuthesan vj   192210542\n");
+
+    return 0;
+}
