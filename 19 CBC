@@ -1,0 +1,75 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <openssl/des.h>
+#include <openssl/rand.h>
+
+#define BLOCK_SIZE 8 // 3DES block size is 8 bytes
+#define KEY_SIZE 24  // 3DES key size is 24 bytes
+#define IV_SIZE 8    // 3DES IV size is 8 bytes
+
+void handleErrors() {
+    ERR_print_errors_fp(stderr);
+    abort();
+}
+
+void des3CBCEncrypt(const uint8_t *plaintext, size_t plaintext_len, const uint8_t *key, const uint8_t *iv, uint8_t *ciphertext) {
+    DES_key_schedule ks1, ks2, ks3;
+    DES_cblock key1, key2, key3;
+    DES_cblock ivec;
+    DES_cblock outblock;
+    DES_cblock inblock;
+    int num = 0;
+
+    memcpy(key1, key, 8);
+    memcpy(key2, key + 8, 8);
+    memcpy(key3, key + 16, 8);
+
+    DES_set_key_unchecked(&key1, &ks1);
+    DES_set_key_unchecked(&key2, &ks2);
+    DES_set_key_unchecked(&key3, &ks3);
+
+    memcpy(ivec, iv, IV_SIZE);
+
+    while (plaintext_len > 0) {
+        size_t chunk_size = plaintext_len > BLOCK_SIZE ? BLOCK_SIZE : plaintext_len;
+
+        memcpy(inblock, plaintext, chunk_size);
+        plaintext += chunk_size;
+        plaintext_len -= chunk_size;
+
+        DES_ncbc_encrypt(inblock, outblock, chunk_size, &ks1, &ivec, DES_ENCRYPT);
+        DES_ncbc_encrypt(outblock, outblock, chunk_size, &ks2, &ivec, DES_ENCRYPT);
+        DES_ncbc_encrypt(outblock, ciphertext, chunk_size, &ks3, &ivec, DES_ENCRYPT);
+
+        ciphertext += chunk_size;
+    }
+}
+
+void printHex(const uint8_t *data, size_t length) {
+    for (size_t i = 0; i < length; i++) {
+        printf("%02x", data[i]);
+    }
+    printf("\n");
+}
+
+int main() {
+    uint8_t plaintext[] = "This is a block of plaintext for 3DES CBC mode.";
+    size_t plaintext_len = strlen((char *)plaintext);
+    
+    uint8_t key[KEY_SIZE];
+    uint8_t iv[IV_SIZE];
+    uint8_t ciphertext[BLOCK_SIZE * ((plaintext_len / BLOCK_SIZE) + 1)];
+
+    if (!RAND_bytes(key, sizeof(key))) handleErrors();
+    if (!RAND_bytes(iv, sizeof(iv))) handleErrors();
+
+    des3CBCEncrypt(plaintext, plaintext_len, key, iv, ciphertext);
+
+    printf("Ciphertext (hex): ");
+    printHex(ciphertext, plaintext_len + BLOCK_SIZE);
+
+    printf("\n\n\nsuthesan vj   192210542\n");
+
+    return 0;
+}
