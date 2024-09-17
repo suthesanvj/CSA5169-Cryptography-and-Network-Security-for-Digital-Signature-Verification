@@ -1,0 +1,102 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MATRIX_SIZE 5
+
+void prepareText(char *text, char *preparedText) {
+    int j = 0;
+    for (int i = 0; text[i] != '\0'; i++) {
+        if (isalpha(text[i])) {
+            preparedText[j++] = toupper(text[i]);
+        }
+    }
+    preparedText[j] = '\0';
+
+    for (int i = 0; preparedText[i] != '\0'; i++) {
+        if (preparedText[i] == preparedText[i + 1]) {
+            for (int k = strlen(preparedText); k >= i + 1; k--) {
+                preparedText[k + 1] = preparedText[k];
+            }
+            preparedText[i + 1] = 'X';
+        }
+    }
+}
+
+void generatePlayfairMatrix(char *keyword, char matrix[MATRIX_SIZE][MATRIX_SIZE]) {
+    int used[26] = {0};
+    int k = 0;
+
+    for (int i = 0; keyword[i] != '\0'; i++) {
+        char ch = toupper(keyword[i]);
+        if (ch >= 'A' && ch <= 'Z' && !used[ch - 'A'] && ch != 'J') {
+            matrix[k / MATRIX_SIZE][k % MATRIX_SIZE] = ch;
+            used[ch - 'A'] = 1;
+            k++;
+        }
+    }
+
+    for (char ch = 'A'; ch <= 'Z'; ch++) {
+        if (ch != 'J' && !used[ch - 'A']) {
+            matrix[k / MATRIX_SIZE][k % MATRIX_SIZE] = ch;
+            k++;
+        }
+    }
+}
+
+void findPosition(char ch, char matrix[MATRIX_SIZE][MATRIX_SIZE], int *row, int *col) {
+    for (int i = 0; i < MATRIX_SIZE; i++) {
+        for (int j = 0; j < MATRIX_SIZE; j++) {
+            if (matrix[i][j] == ch) {
+                *row = i;
+                *col = j;
+                return;
+            }
+        }
+    }
+}
+
+void playfairDecrypt(char *ciphertext, char *keyword, char *decrypted) {
+    char matrix[MATRIX_SIZE][MATRIX_SIZE];
+    generatePlayfairMatrix(keyword, matrix);
+
+    int len = strlen(ciphertext);
+    int i = 0, j = 0;
+
+    while (i < len) {
+        char dig1 = ciphertext[i++];
+        char dig2 = (i < len) ? ciphertext[i++] : 'X';
+
+        int row1, col1, row2, col2;
+        findPosition(dig1, matrix, &row1, &col1);
+        findPosition(dig2, matrix, &row2, &col2);
+
+        if (row1 == row2) {
+            decrypted[j++] = matrix[row1][(col1 + MATRIX_SIZE - 1) % MATRIX_SIZE];
+            decrypted[j++] = matrix[row2][(col2 + MATRIX_SIZE - 1) % MATRIX_SIZE];
+        } else if (col1 == col2) {
+            decrypted[j++] = matrix[(row1 + MATRIX_SIZE - 1) % MATRIX_SIZE][col1];
+            decrypted[j++] = matrix[(row2 + MATRIX_SIZE - 1) % MATRIX_SIZE][col2];
+        } else {
+            decrypted[j++] = matrix[row1][col2];
+            decrypted[j++] = matrix[row2][col1];
+        }
+    }
+    decrypted[j] = '\0';
+}
+
+int main() {
+    char ciphertext[] = "KXJEY UREBE ZWEHE WRYTU HEYFS KREHE GOYFI WTTTU OLKSY CAJPO BOTEI ZONTX BYBNT GONEY CUZWR GDSON SXBOU YWRHE BAAHY USEDQ";
+    char keyword[] = "PLAYFAIR";
+    char preparedText[100];
+    char decrypted[100];
+
+    prepareText(ciphertext, preparedText);
+    playfairDecrypt(preparedText, keyword, decrypted);
+
+    printf("Decrypted message: %s\n", decrypted);
+
+    printf("\n\n\nsuthesan vj   192210542\n");
+
+    return 0;
+}
