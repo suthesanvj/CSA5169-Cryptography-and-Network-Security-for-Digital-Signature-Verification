@@ -1,0 +1,56 @@
+#include <stdio.h>
+
+int gcd(int a, int b) {
+    while (b != 0) {
+        int temp = b;
+        b = a % b;
+        a = temp;
+    }
+    return a;
+}
+
+int modInverse(int a, int m) {
+    for (int x = 1; x < m; x++) {
+        if ((a * x) % m == 1) {
+            return x;
+        }
+    }
+    return -1;
+}
+
+void affineDecrypt(char text[], int a, int b, char decryptedText[]) {
+    int a_inv = modInverse(a, 26);
+    if (a_inv == -1) {
+        printf("No modular inverse for a=%d under mod 26.\n", a);
+        return;
+    }
+
+    int i = 0;
+    while (text[i] != '\0') {
+        if (text[i] >= 'A' && text[i] <= 'Z') {
+            decryptedText[i] = (a_inv * ((text[i] - 'A' - b + 26) % 26)) % 26 + 'A';
+        } else if (text[i] >= 'a' && text[i] <= 'z') {
+            decryptedText[i] = (a_inv * ((text[i] - 'a' - b + 26) % 26)) % 26 + 'a';
+        } else {
+            decryptedText[i] = text[i];
+        }
+        i++;
+    }
+    decryptedText[i] = '\0';
+}
+
+int main() {
+    char ciphertext[] = "B U SOME CIPHERTEXT";
+    char decryptedText[100];
+    
+    int a = 15;
+    int b = 23;
+
+    affineDecrypt(ciphertext, a, b, decryptedText);
+
+    printf("Decrypted text: %s\n", decryptedText);
+
+    printf("\n\n\nsuthesan vj   192210542\n");
+
+    return 0;
+}
