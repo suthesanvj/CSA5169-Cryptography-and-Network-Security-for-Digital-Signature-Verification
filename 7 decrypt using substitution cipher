@@ -1,0 +1,76 @@
+#include <stdio.h>
+#include <string.h>
+
+#define MAX 256
+
+void frequencyAnalysis(char text[], int freq[]) {
+    for (int i = 0; text[i] != '\0'; i++) {
+        if (text[i] >= ' ' && text[i] <= '~') {
+            freq[(unsigned char)text[i]]++;
+        }
+    }
+}
+
+void printFrequency(int freq[]) {
+    for (int i = 0; i < MAX; i++) {
+        if (freq[i] > 0) {
+            printf("%c: %d\n", i, freq[i]);
+        }
+    }
+}
+
+void decryptSubstitution(char text[], char mapping[], char decrypted[]) {
+    for (int i = 0; text[i] != '\0'; i++) {
+        if (text[i] >= ' ' && text[i] <= '~') {
+            decrypted[i] = mapping[(unsigned char)text[i]];
+        } else {
+            decrypted[i] = text[i];
+        }
+    }
+    decrypted[strlen(text)] = '\0';
+}
+
+int main() {
+    char ciphertext[] = "53‡‡†305))6*;4826)4‡.)4‡);806*;48†8¶60))85;;]8*;:‡*8†83 (88)5*†;46(;88*96*?;8)*‡(;485);5*†2:*‡(;4956*2(5*—4)8¶8* ;4069285);)6†8)4‡‡;1(‡9;48081;8:8‡1;48†85;4)485†528806*81 (‡9;48;(88;4(‡?34;48)4‡;161;:188;‡?;";
+    char decrypted[MAX];
+    int freq[MAX] = {0};
+    
+    frequencyAnalysis(ciphertext, freq);
+    printf("Frequency Analysis:\n");
+    printFrequency(freq);
+    
+    char mapping[MAX];
+    for (int i = 0; i < MAX; i++) {
+        mapping[i] = (char)i;
+    }
+
+    mapping['†'] = 'e';  // Example mapping
+    mapping['‡'] = 't';  // Example mapping
+    mapping['¶'] = 'h';  // Example mapping
+    mapping['*'] = 'a';  // Example mapping
+    mapping[';'] = 'o';  // Example mapping
+    mapping[':'] = 'i';  // Example mapping
+    mapping['?'] = 's';  // Example mapping
+    mapping['('] = 'n';  // Example mapping
+    mapping[')'] = 'r';  // Example mapping
+    mapping['['] = 'd';  // Example mapping
+    mapping[']'] = 'l';  // Example mapping
+    mapping['—'] = 'c';  // Example mapping
+    mapping['1'] = 'f';  // Example mapping
+    mapping['2'] = 'u';  // Example mapping
+    mapping['3'] = 'g';  // Example mapping
+    mapping['4'] = 'm';  // Example mapping
+    mapping['5'] = 'p';  // Example mapping
+    mapping['6'] = 'b';  // Example mapping
+    mapping['8'] = 'v';  // Example mapping
+    mapping['9'] = 'w';  // Example mapping
+    mapping['0'] = 'q';  // Example mapping
+    mapping[' '] = ' ';  // Preserve spaces
+    
+    decryptSubstitution(ciphertext, mapping, decrypted);
+    printf("Decrypted text: %s\n", decrypted);
+    
+    printf("\n\n\nsuthesan vj   192210542\n");
+
+    return 0;
+}
