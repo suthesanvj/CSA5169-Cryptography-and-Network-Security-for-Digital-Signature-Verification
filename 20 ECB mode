@@ -1,0 +1,57 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <openssl/evp.h>
+#include <openssl/rand.h>
+
+#define BLOCK_SIZE 16 // AES block size is 16 bytes
+#define KEY_SIZE 32   // 256-bit key for AES
+
+void handleErrors() {
+    ERR_print_errors_fp(stderr);
+    abort();
+}
+
+void aesECBEncrypt(const uint8_t *plaintext, size_t plaintext_len, const uint8_t *key, uint8_t *ciphertext) {
+    EVP_CIPHER_CTX *ctx;
+    int len;
+    int ciphertext_len;
+
+    if (!(ctx = EVP_CIPHER_CTX_new())) handleErrors();
+
+    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_ecb(), NULL, key, NULL)) handleErrors();
+
+    if (1 != EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len)) handleErrors();
+    ciphertext_len = len;
+
+    if (1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len)) handleErrors();
+    ciphertext_len += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+}
+
+void printHex(const uint8_t *data, size_t length) {
+    for (size_t i = 0; i < length; i++) {
+        printf("%02x", data[i]);
+    }
+    printf("\n");
+}
+
+int main() {
+    uint8_t plaintext[] = "This is a block of plaintext data for ECB mode.";
+    size_t plaintext_len = strlen((char *)plaintext);
+    
+    uint8_t key[KEY_SIZE];
+    uint8_t ciphertext[BLOCK_SIZE * ((plaintext_len / BLOCK_SIZE) + 1)];
+
+    if (!RAND_bytes(key, sizeof(key))) handleErrors();
+
+    aesECBEncrypt(plaintext, plaintext_len, key, ciphertext);
+
+    printf("Ciphertext (hex): ");
+    printHex(ciphertext, plaintext_len + BLOCK_SIZE);
+
+    printf("\n\n\nsuthesan vj   192210542\n");
+
+    return 0;
+}
