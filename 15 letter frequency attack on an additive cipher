@@ -1,0 +1,87 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#define ALPHABET_SIZE 26
+#define MAX_TEXT_SIZE 1000
+#define TOP_N 10
+
+// Function to compute the frequency of each letter in the ciphertext
+void computeFrequency(char *text, int *frequency) {
+    int len = strlen(text);
+    for (int i = 0; i < len; i++) {
+        if (isalpha(text[i])) {
+            frequency[tolower(text[i]) - 'a']++;
+        }
+    }
+}
+
+// Function to decrypt the ciphertext with a given shift
+void decryptAdditiveCipher(char *ciphertext, int shift, char *plaintext) {
+    int len = strlen(ciphertext);
+    for (int i = 0; i < len; i++) {
+        if (isalpha(ciphertext[i])) {
+            plaintext[i] = ((tolower(ciphertext[i]) - 'a' - shift + ALPHABET_SIZE) % ALPHABET_SIZE) + 'a';
+        } else {
+            plaintext[i] = ciphertext[i];
+        }
+    }
+    plaintext[len] = '\0';
+}
+
+// Function to print the frequency analysis of the ciphertext
+void printFrequencyAnalysis(char *ciphertext) {
+    int frequency[ALPHABET_SIZE] = {0};
+    computeFrequency(ciphertext, frequency);
+    
+    for (int i = 0; i < ALPHABET_SIZE; i++) {
+        printf("%c: %d\n", 'a' + i, frequency[i]);
+    }
+}
+
+// Function to perform a frequency attack on the additive cipher
+void frequencyAttack(char *ciphertext, int topN) {
+    int frequency[ALPHABET_SIZE] = {0};
+    computeFrequency(ciphertext, frequency);
+    
+    int sortedShifts[ALPHABET_SIZE];
+    for (int i = 0; i < ALPHABET_SIZE; i++) {
+        sortedShifts[i] = i;
+    }
+    
+    // Simple bubble sort to sort shifts by frequency (descending)
+    for (int i = 0; i < ALPHABET_SIZE - 1; i++) {
+        for (int j = 0; j < ALPHABET_SIZE - i - 1; j++) {
+            if (frequency[sortedShifts[j]] < frequency[sortedShifts[j + 1]]) {
+                int temp = sortedShifts[j];
+                sortedShifts[j] = sortedShifts[j + 1];
+                sortedShifts[j + 1] = temp;
+            }
+        }
+    }
+    
+    char plaintext[MAX_TEXT_SIZE];
+    for (int i = 0; i < topN && i < ALPHABET_SIZE; i++) {
+        int shift = sortedShifts[i];
+        decryptAdditiveCipher(ciphertext, shift, plaintext);
+        printf("Possible Plaintext with shift %d: %s\n", shift, plaintext);
+    }
+}
+
+int main() {
+    char ciphertext[MAX_TEXT_SIZE];
+    int topN;
+
+    printf("Enter the ciphertext: ");
+    fgets(ciphertext, sizeof(ciphertext), stdin);
+    ciphertext[strcspn(ciphertext, "\n")] = '\0';  // Remove trailing newline
+
+    printf("Enter the number of top possible plaintexts to show: ");
+    scanf("%d", &topN);
+    
+    frequencyAttack(ciphertext, topN);
+
+    printf("\n\n\nsuthesan vj   192210542\n");
+
+    return 0;
+}
