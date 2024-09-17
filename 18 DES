@@ -1,0 +1,68 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+
+#define DES_KEY_SIZE 8
+#define DES_SUBKEY_SIZE 6
+#define DES_ROUNDS 16
+
+void generateSubkeys(uint8_t key[DES_KEY_SIZE], uint8_t subkeys[DES_ROUNDS][DES_SUBKEY_SIZE]) {
+    uint8_t permutedKey[DES_KEY_SIZE];
+    uint8_t c[4], d[4];
+    uint8_t shiftSchedule[DES_ROUNDS] = {1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2}; // Sample shift schedule
+
+    // Initial permutation of the key
+    for (int i = 0; i < DES_KEY_SIZE; i++) {
+        permutedKey[i] = key[i];
+    }
+
+    // Split key into two halves
+    memcpy(c, permutedKey, 4);
+    memcpy(d, permutedKey + 4, 4);
+
+    // Generate subkeys
+    for (int round = 0; round < DES_ROUNDS; round++) {
+        // Perform left shifts on C and D
+        int shift = shiftSchedule[round];
+        memmove(c, c + shift, 4 - shift);
+        memset(c + (4 - shift), 0, shift);
+        memmove(d, d + shift, 4 - shift);
+        memset(d + (4 - shift), 0, shift);
+
+        // Combine C and D to form subkey
+        memcpy(subkeys[round], c, 3);
+        memcpy(subkeys[round] + 3, d, 3);
+        // The subkey may need to be permuted and truncated to DES_SUBKEY_SIZE here
+    }
+}
+
+void desEncryptDecryptBlock(uint8_t *block, uint8_t subkeys[DES_ROUNDS][DES_SUBKEY_SIZE]) {
+    // DES block encryption/decryption implementation here
+}
+
+void desProcess(uint8_t *data, size_t dataSize, uint8_t key[DES_KEY_SIZE]) {
+    uint8_t subkeys[DES_ROUNDS][DES_SUBKEY_SIZE];
+    generateSubkeys(key, subkeys);
+
+    for (size_t i = 0; i < dataSize; i += DES_KEY_SIZE) {
+        desEncryptDecryptBlock(data + i, subkeys);
+    }
+}
+
+int main() {
+    uint8_t data[] = { /* data bytes here */ };
+    size_t dataSize = sizeof(data);
+    uint8_t key[DES_KEY_SIZE] = { /* key bytes here */ };
+
+    desProcess(data, dataSize, key);
+
+    printf("Processed data: ");
+    for (size_t i = 0; i < dataSize; i++) {
+        printf("%c", data[i]);
+    }
+    printf("\n");
+
+    printf("\n\n\nsuthesan vj   192210542\n");
+
+    return 0;
+}
