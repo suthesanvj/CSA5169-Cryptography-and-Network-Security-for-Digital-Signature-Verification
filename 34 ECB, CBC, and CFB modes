@@ -1,0 +1,133 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define BLOCK_SIZE 16 // Adjust as needed
+
+// Function to perform XOR operation on two blocks
+void xor(unsigned char *block1, unsigned char *block2) {
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        block1[i] ^= block2[i];
+    }
+}
+
+// Function to encrypt a block using a given encryption function
+void encrypt_block(unsigned char *block, void (*encryption_function)(unsigned char *)) {
+    encryption_function(block);
+}
+
+// Function to decrypt a block using a given decryption function
+void decrypt_block(unsigned char *block, void (*decryption_function)(unsigned char *)) {
+    decryption_function(block);
+}
+
+// ECB mode encryption
+void ecb_encrypt(unsigned char *plaintext, unsigned char *ciphertext, int num_blocks, void (*encryption_function)(unsigned char *)) {
+    for (int i = 0; i < num_blocks; i++) {
+        encrypt_block(plaintext + i * BLOCK_SIZE, encryption_function);
+        memcpy(ciphertext + i * BLOCK_SIZE, plaintext + i * BLOCK_SIZE, BLOCK_SIZE);
+    }
+}
+
+// ECB mode decryption
+void ecb_decrypt(unsigned char *ciphertext, unsigned char *plaintext, int num_blocks, void (*decryption_function)(unsigned char *)) {
+    for (int i = 0; i < num_blocks; i++) {
+        decrypt_block(ciphertext + i * BLOCK_SIZE, decryption_function);
+        memcpy(plaintext + i * BLOCK_SIZE, ciphertext + i * BLOCK_SIZE, BLOCK_SIZE);
+    }
+}
+
+// CBC mode encryption
+void cbc_encrypt(unsigned char *plaintext, unsigned char *ciphertext, int num_blocks, void (*encryption_function)(unsigned char *), unsigned char *iv) {
+    for (int i = 0; i < num_blocks; i++) {
+        xor(plaintext + i * BLOCK_SIZE, iv);
+        encrypt_block(plaintext + i * BLOCK_SIZE, encryption_function);
+        memcpy(ciphertext + i * BLOCK_SIZE, plaintext + i * BLOCK_SIZE, BLOCK_SIZE);
+        memcpy(iv, ciphertext + i * BLOCK_SIZE, BLOCK_SIZE);
+    }
+}
+
+// CBC mode decryption
+void cbc_decrypt(unsigned char *ciphertext, unsigned char *plaintext, int num_blocks, void (*decryption_function)(unsigned char *), unsigned char *iv) {
+    for (int i = num_blocks - 1; i >= 0; i--) {
+        decrypt_block(ciphertext + i * BLOCK_SIZE, decryption_function);
+        xor(plaintext + i * BLOCK_SIZE, iv);
+        memcpy(iv, ciphertext + i * BLOCK_SIZE, BLOCK_SIZE);
+    }
+}
+
+// CFB mode encryption
+void cfb_encrypt(unsigned char *plaintext, unsigned char *ciphertext, int num_segments, void (*encryption_function)(unsigned char *), unsigned char *iv) {
+    for (int i = 0; i < num_segments; i++) {
+        xor(plaintext + i * BLOCK_SIZE, iv);
+        encrypt_block(iv, encryption_function);
+        memcpy(ciphertext + i * BLOCK_SIZE, plaintext + i * BLOCK_SIZE, BLOCK_SIZE);
+    }
+}
+
+// CFB mode decryption
+void cfb_decrypt(unsigned char *ciphertext, unsigned char *plaintext, int num_segments, void (*encryption_function)(unsigned char *), unsigned char *iv) {
+    for (int i = 0; i < num_segments; i++) {
+        encrypt_block(iv, encryption_function);
+        xor(ciphertext + i * BLOCK_SIZE, iv);
+        memcpy(plaintext + i * BLOCK_SIZE, ciphertext + i * BLOCK_SIZE, BLOCK_SIZE);
+    }
+}
+
+// Function to pad plaintext to a multiple of block size
+void pad_plaintext(unsigned char *plaintext, int original_length, int *padded_length) {
+    int padding_length = BLOCK_SIZE - (original_length % BLOCK_SIZE);
+    if (padding_length == BLOCK_SIZE) {
+        padding_length = 0;
+    }
+    plaintext[original_length] = 1;
+    memset(plaintext + original_length + 1, 0, padding_length - 1);
+    *padded_length = original_length + padding_length;
+}
+
+// Function to unpad plaintext
+void unpad_plaintext(unsigned char *plaintext, int padded_length) {
+    int padding_length = 0;
+    while (plaintext[padded_length - 1 - padding_length] == 0) {
+        padding_length++;
+    }
+    if (plaintext[padded_length - 1 - padding_length] != 1) {
+        // Invalid padding
+        return;
+    }
+    plaintext[padded_length - padding_length] = 0;
+}
+
+// Example usage with a hypothetical encryption function
+void encryption_function(unsigned char *block) {
+    // Replace with your actual encryption algorithm
+    // ...
+}
+
+// Example usage
+int main() {
+    unsigned char plaintext[] = "Hello, world!";
+    int plaintext_length = strlen(plaintext);
+
+    // Pad plaintext
+    int padded_length;
+    pad_plaintext(plaintext, plaintext_length, &padded_length);
+
+    // Initialize IV
+    unsigned char iv[BLOCK_SIZE] = {0};
+
+    // Encrypt using ECB mode
+    unsigned char ciphertext_ecb[padded_length];
+    ecb_encrypt(plaintext, ciphertext_ecb, padded_length / BLOCK_SIZE, encryption_function);
+
+    // Decrypt using ECB mode
+    unsigned char decrypted_plaintext_ecb[padded_length];
+    ecb_decrypt(ciphertext_ecb, decrypted_plaintext_ecb, padded_length / BLOCK_SIZE, encryption_function);
+
+    // Unpad decrypted plaintext
+    unpad_plaintext(decrypted_plaintext_ecb, padded_length);
+
+    // ... (similarly for CBC and CFB modes)
+
+    return 0;
+}
