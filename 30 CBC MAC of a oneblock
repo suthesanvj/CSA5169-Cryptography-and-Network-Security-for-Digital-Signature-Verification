@@ -1,0 +1,68 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define BLOCK_SIZE 16 // Adjust as needed
+
+// Function to perform XOR operation on two blocks
+void xor(unsigned char *block1, unsigned char *block2) {
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        block1[i] ^= block2[i];
+    }
+}
+
+// Function to encrypt a block using a given encryption function
+void encrypt_block(unsigned char *block, void (*encryption_function)(unsigned char *)) {
+    encryption_function(block);
+}
+
+// CBC MAC function
+void cbc_mac(unsigned char *message, int message_len, unsigned char *mac, void (*encryption_function)(unsigned char *), unsigned char *iv) {
+    int num_blocks = (message_len + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    for (int i = 0; i < num_blocks; i++) {
+        xor(message + i * BLOCK_SIZE, iv);
+        encrypt_block(message + i * BLOCK_SIZE, encryption_function);
+        memcpy(iv, message + i * BLOCK_SIZE, BLOCK_SIZE);
+    }
+    memcpy(mac, iv, BLOCK_SIZE);
+}
+
+// Example usage with a hypothetical encryption function
+void encryption_function(unsigned char *block) {
+    // Replace with your actual encryption algorithm
+    // ...
+}
+
+int main() {
+    unsigned char message[] = "Hello, world!";
+    int message_len = strlen(message);
+
+    unsigned char key[] = "my_secret_key"; // Replace with your actual key
+    unsigned char iv[] = "1234567890123456"; // Replace with your actual IV
+
+    // Calculate the CBC MAC for the one-block message
+    unsigned char mac1[BLOCK_SIZE];
+    cbc_mac(message, message_len, mac1, encryption_function, iv);
+
+    // Calculate the CBC MAC for the two-block message X || (X ? T)
+    unsigned char two_block_message[BLOCK_SIZE * 2];
+    memcpy(two_block_message, message, BLOCK_SIZE);
+    xor(two_block_message + BLOCK_SIZE, mac1);
+    unsigned char mac2[BLOCK_SIZE];
+    cbc_mac(two_block_message, BLOCK_SIZE * 2, mac2, encryption_function, iv);
+
+    // Print the MAC values
+    printf("MAC1: ");
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        printf("%02x ", mac1[i]);
+    }
+    printf("\n");
+
+    printf("MAC2: ");
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        printf("%02x ", mac2[i]);
+    }
+    printf("\n");
+
+    return 0;
+}
