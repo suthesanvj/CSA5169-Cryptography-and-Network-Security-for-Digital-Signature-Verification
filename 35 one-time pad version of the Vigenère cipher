@@ -1,0 +1,47 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define ALPHABET_SIZE 26
+
+// Function to generate a random key stream
+void generate_random_key(int *key, int length) {
+    for (int i = 0; i < length; i++) {
+        key[i] = rand() % ALPHABET_SIZE;
+    }
+}
+
+// Function to encrypt plaintext using Vigenère cipher with OTP
+void vigenere_encrypt(char *plaintext, char *ciphertext, int length, int *key) {
+    for (int i = 0; i < length; i++) {
+        ciphertext[i] = (plaintext[i] - 'A' + key[i % length]) % ALPHABET_SIZE + 'A';
+    }
+}
+
+// Function to decrypt ciphertext using Vigenère cipher with OTP
+void vigenere_decrypt(char *ciphertext, char *plaintext, int length, int *key) {
+    for (int i = 0; i < length; i++) {
+        plaintext[i] = (ciphertext[i] - 'A' - key[i % length] + ALPHABET_SIZE) % ALPHABET_SIZE + 'A';
+    }
+}
+
+int main() {
+    char plaintext[] = "HELLO WORLD";
+    int plaintext_length = strlen(plaintext);
+
+    // Generate a random key stream of the same length as the plaintext
+    int key[plaintext_length];
+    generate_random_key(key, plaintext_length);
+
+    char ciphertext[plaintext_length];
+    vigenere_encrypt(plaintext, ciphertext, plaintext_length, key);
+
+    char decrypted_plaintext[plaintext_length];
+    vigenere_decrypt(ciphertext, decrypted_plaintext, plaintext_length, key);
+
+    printf("Plaintext: %s\n", plaintext);
+    printf("Ciphertext: %s\n", ciphertext);
+    printf("Decrypted Plaintext: %s\n", decrypted_plaintext);
+
+    return 0;
+}
