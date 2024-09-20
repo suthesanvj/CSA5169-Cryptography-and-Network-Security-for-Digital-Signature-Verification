@@ -1,0 +1,41 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define BLOCK_SIZE 128 // SHA-3-256 block size (adjust for 1024 bits)
+#define ROUNDS 24 // Number of rounds for SHA-3-256 (adjust for other variants)
+
+// ... (SHA-3 functions for initialization, round functions, and finalization)
+
+int main() {
+    unsigned char state[BLOCK_SIZE];
+    unsigned char message[] = { /* ... your message here ... */ };
+
+    // Initialize the state with the message
+    sha3_initialize(state, message, sizeof(message));
+
+    // Track nonzero bits in the capacity portion
+    int nonzero_lanes = 0;
+    int capacity_start = BLOCK_SIZE - (BLOCK_SIZE / 2); // Adjust for different capacities
+
+    // Iterate through rounds
+    for (int round = 0; round < ROUNDS; round++) {
+        // Perform SHA-3 round functions (theta, rho, pi, chi, iota)
+
+        // Check if any new lanes in the capacity portion have become nonzero
+        for (int i = capacity_start; i < BLOCK_SIZE; i++) {
+            if (state[i] != 0 && !nonzero_lanes) {
+                nonzero_lanes++;
+            }
+        }
+
+        // If all lanes are nonzero, break the loop
+        if (nonzero_lanes == BLOCK_SIZE - capacity_start) {
+            break;
+        }
+    }
+
+    printf("Number of rounds to fill all capacity lanes: %d\n", round + 1);
+
+    return 0;
+}
