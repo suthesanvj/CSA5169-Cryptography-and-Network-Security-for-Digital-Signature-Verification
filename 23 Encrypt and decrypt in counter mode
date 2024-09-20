@@ -1,0 +1,106 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define BLOCK_SIZE 8 // Block size for S-DES
+
+// S-DES functions (replace with actual implementations)
+void sdes_encrypt_block(unsigned char *block, unsigned char *key);
+void sdes_decrypt_block(unsigned char *block, unsigned char *key);
+
+// CTR mode encryption
+void ctr_encrypt(unsigned char *plaintext, unsigned char *ciphertext, int num_blocks, unsigned char *key, unsigned char *counter) {
+    for (int i = 0; i < num_blocks; i++) {
+        sdes_encrypt_block(counter, key);
+        xor(plaintext + i * BLOCK_SIZE, counter);
+        memcpy(ciphertext + i * BLOCK_SIZE, plaintext + i * BLOCK_SIZE, BLOCK_SIZE);
+        increment_counter(counter);
+    }
+}
+
+// CTR mode decryption
+void ctr_decrypt(unsigned char *ciphertext, unsigned char *plaintext, int num_blocks, unsigned char *key, unsigned char *counter) {
+    for (int i = 0; i < num_blocks; i++) {
+        sdes_encrypt_block(counter, key);
+        xor(ciphertext + i * BLOCK_SIZE, counter);
+        memcpy(plaintext + i * BLOCK_SIZE, ciphertext + i * BLOCK_SIZE, BLOCK_SIZE);
+        increment_counter(counter);
+    }
+}
+
+// XOR operation
+void xor(unsigned char *block1, unsigned char *block2) {
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        block1[i] ^= block2[i];
+    }
+}
+
+// Increment counter
+void increment_counter(unsigned char *counter) {
+    for (int i = BLOCK_SIZE - 1; i >= 0; i--) {
+        counter[i]++;
+        if (counter[i] != 0) {
+            break;
+        }
+    }
+}
+
+// Convert binary string to integer
+int binary_to_int(const char *binary) {
+    int value = 0;
+    int length = strlen(binary);
+    for (int i = 0; i < length; i++) {
+        value <<= 1;
+        value |= (binary[i] - '0');
+    }
+    return value;
+}
+
+// Convert integer to binary string
+char *int_to_binary(int value, int bits) {
+    char *binary = (char *)malloc(bits + 1);
+    binary[bits] = '\0';
+    for (int i = bits - 1; i >= 0; i--) {
+        binary[i] = (value & 1) ? '1' : '0';
+        value >>= 1;
+    }
+    return binary;
+}
+
+// Main function
+int main() {
+    // Test data
+    unsigned char plaintext[] = {0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x40};
+    unsigned char key[] = {0x7F, 0x8D};
+    unsigned char counter[] = {0x00, 0x00, 0x00, 0x00};
+    int num_blocks = sizeof(plaintext) / BLOCK_SIZE;
+
+    // Encrypt
+    unsigned char ciphertext[sizeof(plaintext)];
+    ctr_encrypt(plaintext, ciphertext, num_blocks, key, counter);
+
+    // Decrypt
+    unsigned char decrypted_plaintext[sizeof(plaintext)];
+    ctr_decrypt(ciphertext, decrypted_plaintext, num_blocks, key, counter);
+
+    // Print results
+    printf("Plaintext: ");
+    for (int i = 0; i < sizeof(plaintext); i++) {
+        printf("%02x ", plaintext[i]);
+    }
+    printf("\n");
+
+    printf("Ciphertext: ");
+    for (int i = 0; i < sizeof(ciphertext); i++) {
+        printf("%02x ", ciphertext[i]);
+    }
+    printf("\n");
+
+    printf("Decrypted Plaintext: ");
+    for (int i = 0; i < sizeof(decrypted_plaintext); i++) {
+        printf("%02x ", decrypted_plaintext[i]);
+    }
+    printf("\n");
+
+    return 0;
+}
