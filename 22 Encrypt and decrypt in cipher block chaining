@@ -1,0 +1,91 @@
+#include <stdio.h>
+#include <openssl/evp.h>
+#include <openssl/bio.h>
+#include <openssl/buffer.h>
+#include <openssl/crypto.h>
+
+#define BLOCK_SIZE 16 // Block size for AES-128
+
+int main() {
+    unsigned char plaintext[] = "Hello, world!";
+    int plaintext_len = strlen(plaintext);
+
+    unsigned char key[] = "my_secret_key";
+    int key_len = strlen(key);
+
+    unsigned char iv[] = "1234567890123456";
+    int iv_len = strlen(iv);
+
+    // Create cipher context
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+    if (!ctx) {
+        fprintf(stderr, "Error creating cipher context\n");
+        return 1;
+    }
+
+    // Initialize cipher context for encryption
+    if (EVP_EncryptInit(ctx, EVP_aes_128_cbc(), key, iv) != 1) {
+        fprintf(stderr, "Error initializing cipher for encryption\n");
+        EVP_CIPHER_CTX_free(ctx);
+        return 1;
+    }
+
+    // Encrypt the plaintext
+    int ciphertext_len;
+    int final_len;
+    unsigned char ciphertext[128];
+    if (EVP_EncryptUpdate(ctx, ciphertext, &ciphertext_len, plaintext, plaintext_len) != 1) {
+        fprintf(stderr, "Error encrypting data\n");
+        EVP_CIPHER_CTX_free(ctx);
+        return 1;
+    }
+
+    // Finalize encryption
+    if (EVP_EncryptFinal(ctx, ciphertext + ciphertext_len, &final_len) != 1) {
+        fprintf(stderr, "Error finalizing encryption\n");
+        EVP_CIPHER_CTX_free(ctx);
+        return 1;
+    }
+
+    ciphertext_len += final_len;
+
+    // Print ciphertext
+    printf("Ciphertext: ");
+    for (int i = 0; i < ciphertext_len; i++) {
+        printf("%02x ", ciphertext[i]);
+    }
+    printf("\n");
+
+    // Initialize cipher context for decryption
+    if (EVP_DecryptInit(ctx, EVP_aes_128_cbc(), key, iv) != 1) {
+        fprintf(stderr, "Error initializing cipher for decryption\n");
+        EVP_CIPHER_CTX_free(ctx);
+        return 1;
+    }
+
+    // Decrypt the ciphertext
+    unsigned char decrypted_text[128];
+    int decrypted_len;
+    if (EVP_DecryptUpdate(ctx, decrypted_text, &decrypted_len, ciphertext, ciphertext_len) != 1) {
+        fprintf(stderr, "Error decrypting data\n");
+        EVP_CIPHER_CTX_free(ctx);
+        return 1;
+    }
+
+    // Finalize decryption
+    if (EVP_DecryptFinal(ctx, decrypted_text + decrypted_len, &final_len) != 1) {
+        fprintf(stderr, "Error finalizing decryption\n");
+        EVP_CIPHER_CTX_free(ctx);
+        return 1;
+    }
+
+    decrypted_len += final_len;
+
+    // Print decrypted text
+    printf("Decrypted Text: %s\n", decrypted_text);
+
+    // Free cipher context
+    EVP_CIPHER_CTX_free(ctx);
+
+    return 0;
+}
