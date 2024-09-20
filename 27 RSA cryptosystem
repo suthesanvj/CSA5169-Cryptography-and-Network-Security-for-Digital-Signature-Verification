@@ -1,0 +1,88 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <openssl/evp.h>
+#include <openssl/bio.h>
+#include <openssl/buffer.h>
+#include <openssl/crypto.h>
+
+#define BLOCK_SIZE 16 // Block size for AES-128
+
+// Extended Euclidean algorithm to find the multiplicative inverse
+void extended_euclidean(int a, int b, int *x, int *y) {
+    if (a == 0) {
+        *x = 0;
+        *y = 1;
+        return;
+    }
+    int x1, y1;
+    extended_euclidean(b % a, a, &x1, &y1);
+    *x = y1 - (b / a) * x1;
+    *y = x1;
+}
+
+// RSA encryption
+int rsa_encrypt(int m, int e, int n) {
+    int c = 1;
+    while (e > 0) {
+        if (e % 2 == 1) {
+            c = (c * m) % n;
+        }
+        m = (m * m) % n;
+        e /= 2;
+    }
+    return c;
+}
+
+// RSA decryption
+int rsa_decrypt(int c, int d, int n) {
+    return rsa_encrypt(c, d, n);
+}
+
+// Function to find the greatest common divisor (GCD)
+int gcd(int a, int b) {
+    if (b == 0) {
+        return a;
+    }
+    return gcd(b, a % b);
+}
+
+// Generate a random prime number using OpenSSL
+int generate_prime(int bits) {
+    BIGNUM *bn = BN_new();
+    BN_set_word(bn, 0);
+    BN_generate_prime(bn, bits, 1, 0, NULL, NULL);
+    int prime = BN_get_word(bn);
+    BN_free(bn);
+    return prime;
+}
+
+// Generate a random public key (e) for RSA
+int generate_public_key(int phi_n) {
+    int e;
+    do {
+        e = rand();
+    } while (gcd(e, phi_n) != 1);
+    return e;
+}
+
+// Encrypt a message using RSA
+void rsa_encrypt_message(const char *message, int e, int n, unsigned char *ciphertext, int *ciphertext_len) {
+    // ... (use OpenSSL functions for RSA encryption with padding)
+}
+
+// Decrypt a message using RSA
+void rsa_decrypt_message(const unsigned char *ciphertext, int ciphertext_len, int d, int n, char *plaintext, int *plaintext_len) {
+    // ... (use OpenSSL functions for RSA decryption with padding)
+}
+
+int main() {
+    // ... (set n, e, and plaintext message)
+
+    // Encrypt the entire message as a block
+    rsa_encrypt_message("Hello, world!", e, n, ciphertext, &ciphertext_len);
+
+    // ... (decrypt using rsa_decrypt_message)
+
+    return 0;
+}
