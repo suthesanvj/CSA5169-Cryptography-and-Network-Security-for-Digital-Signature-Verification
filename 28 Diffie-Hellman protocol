@@ -1,0 +1,42 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+int modular_exponentiation(int base, int exponent, int modulus) {
+    int result = 1;
+    while (exponent > 0) {
+        if (exponent % 2 == 1) {
+            result = (result * base) % modulus;
+        }
+        base = (base * base) % modulus;
+        exponent /= 2;
+    }
+    return result;
+}
+
+int main() {
+    int p = 17; // Prime number
+    int g = 5;  // Generator (primitive root of p)
+
+    // Alice's secret key
+    int a = 3;
+
+    // Bob's secret key
+    int b = 7;
+
+    // Alice sends g^a mod p to Bob
+    int A = modular_exponentiation(g, a, p);
+
+    // Bob sends g^b mod p to Alice
+    int B = modular_exponentiation(g, b, p);
+
+    // Alice calculates the shared secret
+    int shared_secret_alice = modular_exponentiation(B, a, p);
+
+    // Bob calculates the shared secret
+    int shared_secret_bob = modular_exponentiation(A, b, p);
+
+    printf("Shared Secret: %d\n", shared_secret_alice);
+
+    return 0;
+}
