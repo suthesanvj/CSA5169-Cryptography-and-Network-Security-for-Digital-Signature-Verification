@@ -1,0 +1,64 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define BLOCK_SIZE 16 // Adjust as needed
+
+// Constants for different block sizes
+const unsigned char R_64[] = {0x87, 0x31, 0x62, 0x43, 0x7F, 0x67, 0x23, 0x30};
+const unsigned char R_128[] = {0x8E, 0x44, 0x43, 0x74, 0x4B, 0x7D, 0x82, 0x31};
+
+// Function to perform left shift and XOR operation
+void left_shift_xor(unsigned char *block, unsigned char *constant) {
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        block[i] <<= 1;
+        if (i < BLOCK_SIZE - 1) {
+            block[i] |= (block[i + 1] & 0x80) >> 7;
+        } else {
+            block[i] |= (constant[i] & 0x80) >> 7;
+        }
+    }
+}
+
+// Function to generate subkeys
+void generate_subkeys(unsigned char *subkeys, void (*encryption_function)(unsigned char *), unsigned char *key) {
+    unsigned char zero_block[BLOCK_SIZE] = {0};
+
+    // Calculate the first subkey
+    encrypt_block(zero_block, encryption_function);
+    left_shift_xor(zero_block, (BLOCK_SIZE == 16) ? R_128 : R_64);
+    memcpy(subkeys, zero_block, BLOCK_SIZE);
+
+    // Calculate the second subkey
+    encrypt_block(zero_block, encryption_function);
+    left_shift_xor(zero_block, subkeys);
+    memcpy(subkeys + BLOCK_SIZE, zero_block, BLOCK_SIZE);
+}
+
+// Example usage with a hypothetical encryption function
+void encryption_function(unsigned char *block) {
+    // Replace with your actual encryption algorithm
+    // ...
+}
+
+int main() {
+    unsigned char key[] = "my_secret_key"; // Replace with your actual key
+
+    unsigned char subkeys[BLOCK_SIZE * 2];
+    generate_subkeys(subkeys, encryption_function, key);
+
+    // Print the subkeys
+    printf("Subkey 1: ");
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        printf("%02x ", subkeys[i]);
+    }
+    printf("\n");
+
+    printf("Subkey 2: ");
+    for (int i = BLOCK_SIZE; i < BLOCK_SIZE * 2; i++) {
+        printf("%02x ", subkeys[i]);
+    }
+    printf("\n");
+
+    return 0;
+}
