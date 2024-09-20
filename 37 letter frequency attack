@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define ALPHABET_SIZE 26
+
+// Function to calculate the frequency of each letter in a string
+void calculate_letter_frequency(char *ciphertext, int *frequency) {
+    for (int i = 0; i < strlen(ciphertext); i++) {
+        frequency[ciphertext[i] - 'A']++;
+    }
+}
+
+// Function to decrypt the ciphertext using a substitution table
+void decrypt_ciphertext(char *ciphertext, int ciphertext_length, int *substitution_table, char *plaintext) {
+    for (int i = 0; i < ciphertext_length; i++) {
+        plaintext[i] = (char) (substitution_table[ciphertext[i] - 'A'] + 'A');
+    }
+}
+
+// Function to generate possible plaintexts based on letter frequency analysis
+void generate_possible_plaintexts(char *ciphertext, int ciphertext_length, int *frequency, int num_possible_plaintexts) {
+    // Create a substitution table based on letter frequency analysis
+    int substitution_table[ALPHABET_SIZE];
+    for (int i = 0; i < ALPHABET_SIZE; i++) {
+        substitution_table[i] = i;
+    }
+
+    // Sort the substitution table based on letter frequency
+    // ... (use a sorting algorithm like quicksort or mergesort)
+
+    // Generate possible plaintexts
+    for (int i = 0; i < num_possible_plaintexts; i++) {
+        char plaintext[ciphertext_length + 1];
+        decrypt_ciphertext(ciphertext, ciphertext_length, substitution_table, plaintext);
+        plaintext[ciphertext_length] = '\0';
+        printf("%d. %s\n", i + 1, plaintext);
+
+        // Modify the substitution table for the next permutation
+        // ... (use a permutation algorithm)
+    }
+}
+
+int main() {
+    char ciphertext[] = "LQWPHQWLDWLRQDOHV";
+    int ciphertext_length = strlen(ciphertext);
+
+    int frequency[ALPHABET_SIZE] = {0};
+    calculate_letter_frequency(ciphertext, frequency);
+
+    int num_possible_plaintexts = 10; // Adjust as needed
+    generate_possible_plaintexts(ciphertext, ciphertext_length, frequency, num_possible_plaintexts);
+
+    return 0;
+}
