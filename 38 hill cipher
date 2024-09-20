@@ -1,0 +1,52 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define BLOCK_SIZE 2 // Adjust block size as needed
+
+// Function to convert a character to its numerical value
+int char_to_int(char c) {
+    return c - 'A';
+}
+
+// Function to convert an integer to its corresponding character
+char int_to_char(int i) {
+    return (char) (i + 'A');
+}
+
+// Function to perform matrix multiplication modulo 26
+void matrix_multiply(int **matrix1, int **matrix2, int rows1, int cols1, int cols2, int **result) {
+    for (int i = 0; i < rows1; i++) {
+        for (int j = 0; j < cols2; j++) {
+            result[i][j] = 0;
+            for (int k = 0; k < cols1; k++) {
+                result[i][j] = (result[i][j] + matrix1[i][k] * matrix2[k][j]) % 26;
+            }
+        }
+    }
+}
+
+// Function to find the inverse of a matrix modulo 26
+void matrix_inverse(int **matrix, int n, int **inverse) {
+    // ... (implementation of matrix inversion modulo 26)
+}
+
+// Function to solve the system of linear equations
+void solve_system(int **known_plaintext, int **known_ciphertext, int num_pairs, int **key) {
+    // ... (implementation of solving the system of linear equations)
+}
+
+int main() {
+    // Known plaintext-ciphertext pairs
+    int known_plaintext[][BLOCK_SIZE] = {{1, 2}, {3, 4}};
+    int known_ciphertext[][BLOCK_SIZE] = {{5, 6}, {7, 8}};
+    int num_pairs = 2;
+
+    // Solve for the key matrix
+    int key[BLOCK_SIZE][BLOCK_SIZE];
+    solve_system(known_plaintext, known_ciphertext, num_pairs, key);
+
+    // ... (use the key matrix for encryption and decryption)
+
+    return 0;
+}
