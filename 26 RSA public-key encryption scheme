@@ -1,0 +1,39 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+// ... (other functions from previous responses)
+
+int main() {
+    // ... (original code)
+
+    // If Bob's private key is leaked, generate new keys
+    if (is_private_key_leaked()) {
+        // Generate new prime numbers p and q
+        int p = generate_prime();
+        int q = generate_prime();
+
+        // Calculate new n
+        int n = p * q;
+
+        // Calculate new phi(n)
+        int phi_n = (p - 1) * (q - 1);
+
+        // Generate new public key e
+        int e = generate_public_key(phi_n);
+
+        // Calculate new private key d
+        int d;
+        extended_euclidean(e, phi_n, &d, NULL);
+        if (d < 0) {
+            d += phi_n;
+        }
+
+        // Update Bob's public and private keys
+        // ...
+    }
+
+    // ... (continue with encryption and decryption)
+
+    return 0;
+}
