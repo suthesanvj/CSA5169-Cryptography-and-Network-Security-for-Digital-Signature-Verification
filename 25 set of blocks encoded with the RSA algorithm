@@ -1,0 +1,61 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+// Extended Euclidean algorithm to find the multiplicative inverse
+void extended_euclidean(int a, int b, int *x, int *y) {
+    // ... (implementation from previous response)
+}
+
+// RSA encryption
+int rsa_encrypt(int m, int e, int n) {
+    // ... (implementation from previous response)
+}
+
+// RSA decryption
+int rsa_decrypt(int c, int d, int n) {
+    // ... (implementation from previous response)
+}
+
+// Function to find the greatest common divisor (GCD)
+int gcd(int a, int b) {
+    if (b == 0) {
+        return a;
+    }
+    return gcd(b, a % b);
+}
+
+int main() {
+    // ... (set n, e, and ciphertext blocks)
+
+    // Assume we know the plaintext of one block
+    int known_plaintext = ...;
+
+    // Find the GCD of known_plaintext and n
+    int common_factor = gcd(known_plaintext, n);
+
+    if (common_factor > 1) {
+        printf("Found common factor: %d\n", common_factor);
+
+        // Factorize n using the common factor
+        int p = common_factor;
+        int q = n / common_factor;
+
+        // Calculate phi(n)
+        int phi_n = (p - 1) * (q - 1);
+
+        // Calculate the private key d
+        int d;
+        extended_euclidean(e, phi_n, &d, NULL);
+        if (d < 0) {
+            d += phi_n;
+        }
+
+        // Decrypt the remaining ciphertext blocks using the private key
+        // ...
+    } else {
+        printf("No common factor found.\n");
+    }
+
+    return 0;
+}
